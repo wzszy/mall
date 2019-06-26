@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <!-- 页面meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>商品管理</title>
+    <!-- Tell the browser to be responsive to screen width -->
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../plugins/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../plugins/adminLTE/css/AdminLTE.css">
+    <link rel="stylesheet" href="../plugins/adminLTE/css/skins/_all-skins.min.css">
+    <link rel="stylesheet" href="../css/style.css">
+	<script src="../plugins/jQuery/jquery-2.2.3.min.js"></script>
+    <script src="../plugins/bootstrap/js/bootstrap.min.js"></script>
+    
+    <!-- 引入angular的js -->
+    <script type="text/javascript" src="../plugins/angularjs/angular.min.js"></script>
+    <!-- 引入分页相关的JS和CSS -->
+    <script type="text/javascript" src="../plugins/angularjs/pagination.js"></script>
+    <link rel="stylesheet" href="../plugins/angularjs/pagination.css">
+    
+    <script type="text/javascript" src="../js/base_pagination.js"></script>
+    <script type="text/javascript" src="../js/service/orderService.js"></script>  
+    <script type="text/javascript" src="../js/controller/baseController.js"></script>
+    <script type="text/javascript" src="../js/controller/orderController.js"></script>  
+ 
+</head>
+
+<body class="hold-transition skin-red sidebar-mini" ng-app="pinyougou" ng-controller="orderController">
+  <!-- .box-body -->
+                
+                    <div class="box-header with-border">
+                        <h3 class="box-title">订单管理</h3>
+                    </div>
+
+                    <div class="box-body">
+
+                        <!-- 数据表格 -->
+                        <div class="table-box">
+
+                            <!--工具栏-->
+                            <div class="pull-left">
+                                <div class="form-group form-inline">
+                                    <div class="btn-group">
+                                       
+                                        <button type="button" class="btn btn-default" title="订单删除" ng-click="del()"><i class="fa fa-trash-o"></i> 删除订单</button>
+                                        <button type="button" class="btn btn-default" title="刷新" onclick="window.location.reload()"><i class="fa fa-refresh"></i> 刷新</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="box-tools pull-right">
+                                <div class="has-feedback">
+                                 收货人：<input type="text" ng-model="searchEntity.receiver">	
+                                 订单编号：<input type="text" ng-model="searchEntity.orderIdStr">	
+                                  		订单状态：<select ng-model="searchEntity.status" ng-click="reload()">
+                                         	<option value="">全部</option>      
+                                         	<option value="1">未付款</option>    
+                                         	<option value="2">待发货</option>    
+                                         	<option value="4">已发货</option>   
+                                         	<option value="5">待评价</option>    
+                                         	<option value="6">交易关闭</option>    
+                                         	<option value="7">已评价</option>                                         
+                                        </select>
+							             订单来源：<select ng-model="searchEntity.sourceType" ng-click="reload()">
+                                         	<option value="">全部</option>      
+                                         	<option value="1">app端</option>    
+                                         	<option value="2">PC端</option>    
+                                         	<option value="3">M端</option>    
+                                         	<option value="4">微信端</option>   
+                                         	<option value="5">手机qq端</option>    
+                                                                                  
+                                        </select>     								
+									<button class="btn btn-default" ng-click="reload();select_all=false">查询</button> 
+									<button class="btn btn-default" ng-click="exportForm()">导出Excel</button>                                      
+                                </div>
+                            </div>
+                            <!--工具栏/-->
+
+			                  <!--数据列表-->
+			                  
+			                  <table id="dataList" class="table table-bordered table-striped table-hover dataTable">
+			                      <thead>
+			                          <tr>
+			                              <th class="" style="padding-right:0px">
+			                                  <input id="selall" type="checkbox" class="icheckbox_square-blue"  ng-model="select_all" ng-change="selectAll()" >
+			                              </th> 
+										  <th class="sorting_asc">订单编号</th>
+									      <th class="sorting">用户账号</th>
+									      <th class="sorting">收货人</th>
+									      <th class="sorting">手机号</th>
+									      <th class="sorting">订单金额</th>
+									      <th class="sorting">支付方式</th>
+									      <th class="sorting">订单来源</th>
+									      <th class="sorting">订单状态</th>										     						
+					                      <th class="text-center">操作</th>
+			                          </tr>
+			                      </thead>
+			                      <tbody>
+			                          <tr ng-repeat="entity in list">
+			                              <td><input  type="checkbox" ng-checked="select_all" ng-click="updateSelected($event, entity.orderIdStr)"></td>			                              
+				                          <td>{{entity.orderId}}</td>
+									      <td>{{entity.userId}}</td>
+									      <td>{{entity.receiver}}</td><!-- 收货人 -->
+									      <td>{{entity.receiverMobile}}</td>
+									      <td>{{entity.payment}}</td>
+									      <td>{{paymentTypeList[entity.paymentType]}}</td>
+		                                  <td>
+		                                  		{{sourceTypeList[entity.sourceType]}}
+
+		                                  </td>	
+		                                  <td>
+		                                  		{{statusList[entity.status]}}
+
+		                                  </td>		                                  
+		                                
+		                                  <td class="text-center">                                           
+		                                 	  <button type="button" class="btn bg-olive btn-xs" data-toggle="modal" data-target="#sellerModal" ng-click="findOne(entity.orderIdStr)">订单详情</button>                                           
+		                                  </td>
+			                          </tr>
+			                       
+			                      </tbody>
+			                  </table>
+			                  <!--数据列表/-->                        
+							  
+							 
+                        </div>
+                        <!-- 数据表格 /-->
+                        <!-- 分页 -->
+						<tm-pagination conf="paginationConf"></tm-pagination>
+                        
+                     </div>
+                    <!-- /.box-body -->
+                    
+       <!-- 订单详情 -->
+<div class="modal fade" id="sellerModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" >
+	<div class="modal-content">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+			<h3 id="myModalLabel">订单详情</h3>
+		</div>
+		<div class="modal-body">							
+			
+			 <ul class="nav nav-tabs">
+			  <li class="active"><a href="#home" data-toggle="tab">基本信息</a></li>
+			  <li><a href="#linkman" data-toggle="tab">商家信息</a></li>
+			  <li><a href="#goods" data-toggle="tab">商品信息</a></li>
+			</ul>							
+			
+			<!-- 选项卡开始 -->         
+		    <div id="myTabContent" class="tab-content">
+			    <div class="tab-pane active in" id="home">
+			      <br>
+			      <table class="table table-bordered table-striped"  width="800px">
+
+			      	<tr>
+			      		<td>收货地址</td>
+			      		<td>{{entity.order.receiverAreaName}}</td>
+			      	</tr>
+			      	<tr>
+			      		<td>订单创建时间</td>
+			      		<td>{{entity.order.createTime}}</td>
+			      	</tr>
+			      	
+			      	<tr>
+			      		<td>物流单号</td>
+			      		<td>{{entity.order.shippingCode}}</td>
+			      	</tr>
+			      </table>			      
+      			</div>	
+			    <div class="tab-pane fade" id="linkman">
+			    	<br>
+					<table class="table table-bordered table-striped" >
+			      	<tr>
+			      		<td>商家</td>
+			      		<td>{{entity.seller.sellerId}}</td>
+			      	</tr>
+			      	<tr >
+			      		<td>店铺</td>
+			      		<td>{{entity.seller.nickName}}</td>
+			      	</tr>
+			      		<tr >
+			      		<td>法人代表</td>
+			      		<td>{{entity.seller.linkmanName}}</td>
+			      	</tr>
+			      		<tr >
+			      		<td>联系电话</td>
+			      		<td>{{entity.seller.telephone}}</td>
+			      	</tr>
+			      		<tr >
+			      		<td>店铺</td>
+			      		<td>{{entity.seller.addressDetail}}</td>
+			      	</tr>
+			      	
+			      
+			      </table>
+			    </div>
+			    <div class="tab-pane fade" id="goods">
+			    	<br>
+					<table class="table table-bordered table-striped" >
+			      	
+			      	<tr ng-repeat="pojo in entity.orderItemList">
+			      		<td>商品信息</td>
+			      		<td>{{pojo.title}}</td>
+			      		<td><img alt="" height="50px" width="50px" src="{{pojo.picPath}}"></td>
+			      	</tr>
+			      	<tr>
+			      		<td>实付金额</td>
+			      		<td>{{entity.order.payment}}</td>
+			      	</tr>
+			      
+			      </table>
+			    </div>
+			    
+			    
+			    
+  			   		
+           <!-- 选项卡结束 -->          
+			<div class="modal-footer">						
+		
+			<button class="btn btn-default" data-dismiss="modal" aria-hidden="true">关闭订单详情</button>
+		</div>
+			
+		</div>             
+		
+</body>
+
+</html>
